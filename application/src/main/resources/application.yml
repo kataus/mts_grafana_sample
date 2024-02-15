@@ -5,3 +5,14 @@ spring:
     password: ${DATABASE_PASSWORD}
   liquibase:
     change-log: classpath:/db/changelog-master.xml
+
+management:
+  endpoints.web.exposure.include: "*"
+  endpoint.health.show-details: "ALWAYS"
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true

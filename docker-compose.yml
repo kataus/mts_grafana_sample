@@ -39,7 +39,6 @@ services:
     volumes:
       - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
-
   grafana:
     image: grafana/grafana
     user: root
