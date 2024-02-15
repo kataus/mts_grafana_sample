@@ -9,7 +9,6 @@ import ru.itvitality.otus.grafana.model.dto.Good;
 import ru.itvitality.otus.grafana.service.GoodService;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController("/api/v1/goods")
 @RequiredArgsConstructor

@@ -1,0 +1,3 @@
+rootProject.name = 'mts_grafana_smaple'
+
+include ':application'
