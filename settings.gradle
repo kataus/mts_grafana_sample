@@ -1,3 +1,4 @@
 rootProject.name = 'mts_grafana_smaple'
 
 include ':application'
+include ':example:burner'
