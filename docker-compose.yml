@@ -14,18 +14,18 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
+    container_name: kafka
     depends_on:
       - zookeeper
     ports:
       - 29092:29092
-    hostname: kafka
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+        KAFKA_BROKER_ID: 1
+        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   kafka-ui:
     image: provectuslabs/kafka-ui
@@ -35,11 +35,20 @@ services:
     restart: always
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     links:
       - kafka
       - zookeeper
+
+  kafka-setup:
+   image: confluentinc/cp-kafka:latest
+   container_name: kafka-setup
+   depends_on:
+     - kafka
+   entrypoint: [ '/bin/sh', '-c' ]
+   command:
+    - "kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic goods_topic --replication-factor 1 --partitions 3"
 
   postgres:
     image: postgres:16.2
@@ -94,14 +103,51 @@ services:
     networks:
       - default
 
-  application:
+  application1:
     build:
       context: ..
       dockerfile: ./mts_grafana_sample/application/Dockerfile
-    container_name: application
+    container_name: application1
     env_file:
       - ./application/application.env
     ports:
       - "8095:8080"
     depends_on:
+      - postgres
+
+  application2:
+    build:
+      context: ..
+      dockerfile: ./mts_grafana_sample/application/Dockerfile
+    container_name: application2
+    env_file:
+      - ./application/application.env
+    ports:
+      - "8096:8080"
+    depends_on:
+      - postgres
+
+  application3:
+    build:
+      context: ..
+      dockerfile: ./mts_grafana_sample/application/Dockerfile
+    container_name: application3
+    env_file:
+      - ./application/application.env
+    ports:
+      - "8097:8080"
+    depends_on:
+      - postgres
+
+  burner:
+    build:
+      context: ..
+      dockerfile: ./mts_grafana_sample/example/burner/Dockerfile
+    container_name: burner
+    env_file:
+      - ./example/burner/application.env
+    ports:
+      - "8098:8080"
+    depends_on:
+      - kafka
       - postgres
