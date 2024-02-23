@@ -1,5 +1,6 @@
 package ru.itvitality.otus.grafana.service.impl;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +32,9 @@ public class GoodServiceImpl implements GoodService {
     private Integer epOrded = 0;
 
     @Override
+    @Timed(value = "good_service_list", histogram = true)
     public List<Good> findAll() {
+        log.info( "Try to get all goods" );
         String endPoint = getEndPoint();
 
         var request = new RequestEntity( HttpMethod.GET,
@@ -50,8 +53,8 @@ public class GoodServiceImpl implements GoodService {
         }
     }
 
-
     @Override
+    @Timed(value = "good_service_save", histogram = true)
     public Good save( Good good ) {
         var request = new RequestEntity( good, HttpMethod.POST,
                 UriComponentsBuilder.fromHttpUrl( getEndPoint() )
@@ -71,6 +74,7 @@ public class GoodServiceImpl implements GoodService {
     }
 
     @Override
+    @Timed(value = "good_service_find", histogram = true)
     public Good find( String id ) {
         var request = new RequestEntity( HttpMethod.GET,
                 UriComponentsBuilder.fromHttpUrl( getEndPoint() )

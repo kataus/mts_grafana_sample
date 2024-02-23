@@ -20,12 +20,12 @@ services:
     ports:
       - 29092:29092
     environment:
-        KAFKA_BROKER_ID: 1
-        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   kafka-ui:
     image: provectuslabs/kafka-ui
@@ -42,13 +42,13 @@ services:
       - zookeeper
 
   kafka-setup:
-   image: confluentinc/cp-kafka:latest
-   container_name: kafka-setup
-   depends_on:
-     - kafka
-   entrypoint: [ '/bin/sh', '-c' ]
-   command:
-    - "kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic goods_topic --replication-factor 1 --partitions 3"
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-setup
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command:
+      - "kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic goods_topic --replication-factor 1 --partitions 3"
 
   postgres:
     image: postgres:16.2
@@ -84,25 +84,6 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-
-  grafana:
-    image: grafana/grafana
-    user: root
-    depends_on:
-      - prometheus
-    ports:
-      - 3000:3000
-    volumes:
-      - ./grafana:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-    container_name: grafana
-    hostname: grafana
-    restart: unless-stopped
-    environment:
-      - GF_SERVER_ROOT_URL=http://localhost:3000/
-      - GF_INSTALL_PLUGINS=grafana-polystat-panel
-    networks:
-      - default
 
   application1:
     image: kataus/mts_grafana_sample-application
@@ -144,32 +125,3 @@ services:
     depends_on:
       - kafka
       - postgres
-
-  elasticsearch:
-    image: elasticsearch:7.17.18
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-
-  logstash:
-    image: logstash:7.17.13
-    ports:
-      - "5010:5000"
-    volumes:
-      - ./configs/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - ./configs/logstash/:/usr/share/logstash/config
-      - ./configs/logstash/application/logs:/usr/share/logstash/logs
-      - ./configs/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-    command: [ "-f", "/usr/share/logstash/config/logstash.conf" ]
-    depends_on:
-      - elasticsearch
-
-  kibana:
-    image: kibana:7.17.18
-    ports:
-      - "5601:5601"
-    depends_on:
-      - logstash
